@@ -1,0 +1,18 @@
+# secrets & local config
+.env
+
+# runtime data (uploads + SQLite DB) and dispatcher output
+data/
+outbox/
+recipients.xlsx
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store

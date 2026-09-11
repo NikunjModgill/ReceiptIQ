@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReceiptIQ</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧾</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">🧾</div>
+      <div>
+        <h1>ReceiptIQ</h1>
+        <p>Receipt extraction · free local OCR</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <span id="engine-badge" class="pill blue" title="Extraction engine reported by /health">engine: …</span>
+      <a class="btn" href="/docs" target="_blank" rel="noopener">API docs</a>
+      <button id="refresh" class="btn primary" type="button">↻ Refresh</button>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <span class="eyebrow">Upload → extract → persist → review</span>
+    <h2>Turn any receipt into structured data.</h2>
+    <p>Drop a photo or PDF. Merchant, date, line items, tax, tip and total are extracted locally, stored in SQLite, and listed below.</p>
+  </section>
+
+  <main class="layout">
+    <!-- ------------------------------------------------------------ upload -->
+    <section class="card">
+      <div class="card-head"><h2><span class="step">01</span>Upload a receipt</h2></div>
+      <label id="dropzone" class="dropzone" for="file-input" tabindex="0">
+        <input id="file-input" type="file" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf" hidden />
+        <div class="dz-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0-4 4m4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        </div>
+        <div class="dz-text">
+          <strong>Drop a receipt here</strong> or click to browse<br />
+          <small>.png, .jpg, .jpeg, .pdf · max 10 MB</small>
+        </div>
+      </label>
+
+      <div class="status-row">
+        <span id="status" class="status idle" role="status" aria-live="polite">Idle</span>
+        <span id="status-msg" class="status-msg"></span>
+      </div>
+
+      <div id="preview" class="preview" hidden>
+        <img id="preview-img" alt="Uploaded receipt preview" hidden />
+        <div id="preview-pdf" class="preview-pdf" hidden>PDF selected</div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------ result -->
+    <section class="card" id="result-card" hidden>
+      <div class="card-head"><h2><span class="step">02</span>Extracted data</h2></div>
+
+      <div class="invoice">
+        <div class="invoice-head">
+          <div>
+            <div class="label">Merchant</div>
+            <div class="merchant" id="r-merchant">—</div>
+          </div>
+          <div class="total">
+            <div class="label">Total</div>
+            <div class="amount" id="r-total">—</div>
+          </div>
+        </div>
+
+        <div class="kv-grid">
+          <div><span class="k">Date</span><span class="v" id="r-date">—</span></div>
+          <div><span class="k">Subtotal</span><span class="v" id="r-subtotal">—</span></div>
+          <div><span class="k">Tax</span><span class="v" id="r-tax">—</span></div>
+          <div><span class="k">Tip</span><span class="v" id="r-tip">—</span></div>
+          <div><span class="k">Payment</span><span class="v" id="r-payment">—</span></div>
+          <div><span class="k">Engine</span><span class="v blue" id="r-engine">—</span></div>
+        </div>
+
+        <h3>Line items</h3>
+        <div class="table-wrap">
+          <table class="items">
+            <thead><tr><th>#</th><th>Item</th><th class="num">Qty</th><th class="num">Price</th></tr></thead>
+            <tbody id="r-items"></tbody>
+          </table>
+        </div>
+
+        <div id="r-warnings" class="warnings" hidden></div>
+
+        <details class="raw">
+          <summary>Raw JSON</summary>
+          <pre id="r-json"></pre>
+        </details>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------ history -->
+    <section class="card wide">
+      <div class="card-head">
+        <h2><span class="step">03</span>Stored receipts<span id="count" class="pill count">0</span></h2>
+      </div>
+      <div class="table-wrap">
+        <table class="receipts">
+          <thead>
+            <tr>
+              <th>ID</th><th>File</th><th>Merchant</th><th>Date</th>
+              <th class="num">Total</th><th class="num">Tax</th><th class="num">Tip</th><th class="num">Items</th>
+              <th>Created (UTC)</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="receipts-body">
+            <tr><td colspan="10" class="empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <code>POST /upload</code> · <code>GET /receipts</code> · SQLite · RapidOCR · FastAPI
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
